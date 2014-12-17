@@ -1,0 +1,30 @@
+{% autoescape true %}
+<html lang="en">
+  <head>
+    <title>QnA</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href='/'>QnA</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <a class="nav navbar-nav navbar-right" href="{{ url }}">{{ url_linktext }}</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="container">
+    	<form role="form" enctype="multipart/form-data" action="{{uploadurl}}" method="post" onsubmit="return Validate(this)">
+			<label for="exampleInputFile">Select an Image to upload:</label><br>
+			<input id="tags" name="image" accept="image/*" type="file" placeholder="tags">
+			<div><input type="submit" class="btn btn-primary" value="Upload Image"></div>
+	</form>
+    </div>
+    
+  </body>
+</html>
+  
+{% endautoescape %}

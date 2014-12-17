@@ -1,13 +1,16 @@
 import os
 import urllib
-
+from google.appengine.api import images
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from google.appengine.datastore.datastore_query import Cursor
 
+from google.appengine.ext import blobstore
+from google.appengine.ext.blobstore import BlobInfo
+from google.appengine.ext.webapp import blobstore_handlers
 import jinja2
 import webapp2
-
+import logging
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -47,9 +50,18 @@ class Vote(ndb.Model):
     
 class Image(ndb.Model):
     author = ndb.UserProperty()
-    img = ndb.BlobProperty(indexed=False)
-    imgUrl = ndb.StringProperty(indexed=False)
+    img = ndb.BlobKeyProperty(indexed=False)
+    imgUrl = ndb.StringProperty()
     createtime = ndb.DateTimeProperty(auto_now_add=True)
+
+# filters
+def img_inline(string):
+    str = re.sub(r'(\http[s]?://[^\s<>"]+|www\.[^\s<>"]+)', r'<a href="\1">\1</a>', string)
+    str1 = re.sub(r'<a href="(\http[s]?://[^\s<>"]+|www\.[^\s<>"]+)">[^\s]+.jpg</a>', r'<img src="\1">', str)
+    str2 = re.sub(r'<a href="(\http[s]?://[^\s<>"]+|www\.[^\s<>"]+)">[^\s]+.png</a>', r'<img src="\1">', str1)
+    str3 = re.sub(r'<a href="(\http[s]?://[^\s<>"]+|www\.[^\s<>"]+)">[^\s]+.gif</a>', r'<img src="\1">', str2)
+    return str3
+jinja2.filters.FILTERS['img_inline'] = img_inline
 
 # request handlers
 class MainPage(webapp2.RequestHandler):
@@ -289,6 +301,33 @@ class VoteA(webapp2.RequestHandler):
         urlquestion='/ViewQuestion?questionID=%s' % questionID
         self.redirect(urlquestion)
 
+class UploadImage(blobstore_handlers.BlobstoreUploadHandler):
+    def get(self):
+        if users.get_current_user():
+            user = users.get_current_user()
+        else:
+            self.redirect(users.create_login_url(self.request.uri))
+        upload_url = blobstore.create_upload_url('/UploadImage')
+        template_values = {
+                'user':users.get_current_user(),
+                'url_linktext': 'Logout',
+                'url': users.create_logout_url(self.request.uri),
+                'uploadurl': upload_url,
+        }
+        template = JINJA_ENVIRONMENT.get_template('UploadImg.html')
+        self.response.write(template.render(template_values))
+        
+    def post(self):
+        image = Image()
+        imgfile = self.get_uploads('image')
+        if imgfile:
+            blob_info = imgfile[0]
+            image.img = blob_info.key()
+            image.author = users.get_current_user()
+            image.imgUrl = images.get_serving_url(blob_info.key())
+            image.put()
+        self.redirect('/')
+        
 # interface
 application = webapp2.WSGIApplication([
     ('/', MainPage),
@@ -296,6 +335,6 @@ application = webapp2.WSGIApplication([
     ('/AddAnswer', AddAnswer),
     ('/ViewQuestion', ViewQuestion),
     ('/VoteQ', VoteQ),
-    ('/VoteA', VoteA)
-    #('/UploadImage', UploadImage),
+    ('/VoteA', VoteA),
+    ('/UploadImage', UploadImage),
 ], debug=True)

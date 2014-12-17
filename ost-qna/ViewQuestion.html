@@ -25,7 +25,7 @@
           	<a class="btn btn-default" href="/VoteQ?questionID={{question.key.urlsafe()}}&value=false">Down({{ question.downs }})</a>
           </p>
         </div>
-        <div><p>{{ question.content }}</p></div>
+        <div><p>{{ question.content | img_inline }}</p></div>
         
         {% if user and user == question.author %}
       	<div><a class="btn btn-primary" href="/AddQuestion?questionID={{question.key.urlsafe()}}">Edit Question</a></div>
@@ -44,7 +44,7 @@
           	<a class="btn btn-default" href="/VoteA?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}&value=true">Up({{ answer.ups }})</a>
           	<a class="btn btn-default" href="/VoteA?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}&value=false">Down({{ answer.downs }})</a>
           </p>
-          <p>{{answer.content}}</p>
+          <p>{{answer.content | img_inline }}</p>
           
 	      {% if user and user == answer.author %}
 	      <div><a class="btn btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}">Edit Answer</a></div>
