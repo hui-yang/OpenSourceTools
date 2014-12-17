@@ -1,0 +1,48 @@
+{% autoescape true %}
+<html lang="en">
+  <head>
+    <title>QnA</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href='/'>QnA</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <a class="nav navbar-nav navbar-right" href="{{ url }}">{{ url_linktext }}</a>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <h3>Add a new Question</h3>
+      <form action="/" method="post">
+        <div>
+          <p>Title:</p>
+          <input type="text" name="name">
+          <p>Tags:
+            <input type="checkbox" value="Arts and Design" name="tags">Arts and Design
+            <input type="checkbox" value="Books" name="tags">Books
+            <input type="checkbox" value="Finance" name="tags">Finance
+            <input type="checkbox" value="Food" name="tags">Food
+            <input type="checkbox" value="Healthcare and Medicine" name="tags">Healthcare and Medicine
+            <input type="checkbox" value="Movies" name="tags">Movies
+            <input type="checkbox" value="Music" name="tags">Music
+            <input type="checkbox" value="Philosophy" name="tags">Philosophy
+            <input type="checkbox" value="Psychology" name="tags">Psychology
+            <input type="checkbox" value="Science and Technology" name="tags">Science and Technology
+            <input type="checkbox" value="Travel" name="tags">Travel
+          </p>
+          <p>Content:</p>
+          <textarea name="content"></textarea>
+          <p><a href="/UploadImage">Insert an image</a></p>
+          <input type="submit" value="Post Question">
+        </div>
+      </form>
+    </div>
+    
+  </body>
+</html>
+  
+{% endautoescape %}
