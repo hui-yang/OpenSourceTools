@@ -20,12 +20,17 @@
           <h3>{{ question.name }}</h3>
           <p>By {{question.author}} Created: {{question.createtime}} Modified: {{question.modtime}}</p>
           <p>{% for tag in question.tags %} [{{ tag }}] {% endfor %}</p>
-          <p>+{{ voting.0 }} -{{ voting.1 }}</p>
+          <p>
+          	<a class="btn btn-default" href="/VoteQ?questionID={{question.key.urlsafe()}}&value=true">Up({{ question.ups }})</a>
+          	<a class="btn btn-default" href="/VoteQ?questionID={{question.key.urlsafe()}}&value=false">Down({{ question.downs }})</a>
+          </p>
         </div>
         <div><p>{{ question.content }}</p></div>
+        
         {% if user and user == question.author %}
       	<div><a class="btn btn-primary" href="/AddQuestion?questionID={{question.key.urlsafe()}}">Edit Question</a></div>
       	{% endif %}
+      	
       	<div><a class="btn btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}">Add Answer</a></div>
       	<div><p><a href="/">Back</a></p></div>
     </div>
@@ -35,8 +40,12 @@
     	<div>
     	  <h4>{{answer.name}}</h4>
     	  <p>By {{answer.author}} Created: {{answer.createtime}} Modified: {{answer.modtime}}</p>
-          <p>+{{ voting.0 }} -{{ voting.1 }}</p>
+          <p>
+          	<a class="btn btn-default" href="/VoteA?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}&value=true">Up({{ answer.ups }})</a>
+          	<a class="btn btn-default" href="/VoteA?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}&value=false">Down({{ answer.downs }})</a>
+          </p>
           <p>{{answer.content}}</p>
+          
 	      {% if user and user == answer.author %}
 	      <div><a class="btn btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}">Edit Answer</a></div>
 	      {% endif %}

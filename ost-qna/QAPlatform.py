@@ -24,6 +24,9 @@ class Question(ndb.Model):
     tags = ndb.StringProperty(indexed=True,repeated=True)
     createtime = ndb.DateTimeProperty(auto_now_add=True)
     modtime = ndb.DateTimeProperty(auto_now=True)
+    ups = ndb.IntegerProperty()
+    downs = ndb.IntegerProperty()
+    net = ndb.IntegerProperty()
     
 class Answer(ndb.Model):
     name = ndb.StringProperty()
@@ -60,28 +63,24 @@ class MainPage(webapp2.RequestHandler):
             
         cursor = Cursor(urlsafe=self.request.get('cursor'))
         questions, next_cursor, more = Question.query().order(-Question.modtime).fetch_page(10, start_cursor=cursor)
-           
-        """questiondeletes=Question.query().fetch()
+        """
+        questiondeletes=Question.query().fetch()
         for questiondelete in questiondeletes:
-            questiondelete.key.delete()     """ 
-      
-        voting = []
-        for question in questions:
-            ups = 0
-            downs = 0
-            votes = Vote.query(Vote.vtype == "question", ancestor = question.key).fetch()
-            for vote in votes:
-                if vote.value:
-                    ups += 1
-                else:
-                    downs += 1
-                voting.append((question, ups, downs))
+            questiondelete.key.delete() 
+                 
+        adelete = Answer.query().fetch()
+        for ad in adelete:
+            ad.key.delete()
+            
+        votedelete = Vote.query().fetch()
+        for vd in votedelete:
+            vd.key.delete()
+        """
                 
         template_values = {
                 'url': url,
                 'url_linktext': url_linktext,
                 'questions': questions,
-                'voting': voting,
                 'nextpage': ''
         }
         if more and next_cursor:
@@ -121,6 +120,9 @@ class AddQuestion(webapp2.RequestHandler):
         question.name = self.request.get('name')
         question.content = self.request.get('content')
         question.tags = self.request.get('tags', allow_multiple = True)
+        question.ups = 0
+        question.downs = 0
+        question.net = 0
         question.put()
         url='/ViewQuestion?questionID=%s' % question.key.urlsafe()
         self.redirect(url)
@@ -163,6 +165,9 @@ class AddAnswer(webapp2.RedirectHandler): # add and edit
         answer.author = users.get_current_user()
         answer.name = self.request.get('name')
         answer.content = self.request.get('content')
+        answer.ups = 0
+        answer.downs = 0
+        answer.net = 0
         answer.put()
         url='/ViewQuestion?questionID=%s' % qid
         self.redirect(url)
@@ -173,28 +178,116 @@ class ViewQuestion(webapp2.RequestHandler):
             user = users.get_current_user()
             questionID = self.request.get('questionID')
             question = ndb.Key(urlsafe = questionID).get()
-            votes = Vote.query(ancestor = question.key).fetch()
-            ups = 0
-            downs = 0
-            for vote in votes:
-                if vote.vote:
-                    ups += 1
-                else:
-                    downs += 1
-            voting = (ups, downs)
             
             answers = Answer.query(ancestor = question.key).order(-Answer.net).fetch()
             
             template_values = {
                 'question': question,
-                'voting': voting,
                 'answers': answers,
                 'user': user,
             }
             template = JINJA_ENVIRONMENT.get_template('ViewQuestion.html')
             self.response.write(template.render(template_values))
             
+class VoteQ(webapp2.RequestHandler):
+    def get(self):
+        if users.get_current_user():
+            url = users.create_logout_url(self.request.uri)
+            url_linktext = 'Logout'
+        else:
+            url = users.create_login_url(self.request.uri)
+            url_linktext = 'Login'
+            
+        questionID = self.request.get("questionID")
+        question = ndb.Key(urlsafe = questionID).get()
+        
+        value = self.request.get("value")   
+        cur_user = users.get_current_user()
+        
+        oldvote = Vote.query(Vote.author==cur_user, Vote.vtype=="question", ancestor=ndb.Key(urlsafe = questionID)).get()
+        if oldvote:
+            if oldvote.value == False and value == "true":
+                oldvote.value = True
+                question.net +=2
+                question.ups += 1
+                question.downs -= 1
+            elif oldvote.value == True and value == "false":
+                oldvote.value = False
+                question.net -=2
+                question.ups -= 1
+                question.downs += 1
+            question.put()
+            oldvote.put()
+        else:
+            vote = Vote(parent=ndb.Key(urlsafe = questionID))
+            if value == "true":
+                question.net += 1
+                question.ups += 1
+                vote.value = True
+            else:
+                question.net -= 1
+                question.downs += 1
+                vote.value = False
+            question.put()      
+            vote.vtype = "question"
+            vote.author = cur_user
+            vote.put()
+        urlquestion='/ViewQuestion?questionID=%s' % questionID
+        self.redirect(urlquestion)
 
+class VoteA(webapp2.RequestHandler):
+    def get(self):
+        if users.get_current_user():
+            url = users.create_logout_url(self.request.uri)
+            url_linktext = 'Logout'
+        else:
+            url = users.create_login_url(self.request.uri)
+            url_linktext = 'Login'
+            
+        questionID = self.request.get("questionID")
+        question = ndb.Key(urlsafe = questionID).get()
+        answerID = self.request.get("answerID")
+        answer = ndb.Key(urlsafe = answerID).get()
+        
+        value = self.request.get("value")
+        
+        cur_user = users.get_current_user()
+        
+        oldvote = Vote.query(Vote.author==cur_user, Vote.vtype == "answer", ancestor = answer.key).get()
+        if oldvote:
+            if oldvote.value == False and value == "true":
+                answer.net +=2
+                answer.ups += 1
+                answer.downs -= 1
+                answer.put()
+                    
+                oldvote.value = True
+                oldvote.put()
+            elif oldvote.value == True and value == "false":
+                answer.net -=2
+                answer.ups -= 1
+                answer.downs += 1
+                answer.put()
+                    
+                oldvote.value = False
+                oldvote.put()
+        else:
+            vote = Vote(parent = answer.key)
+            if value == "true":
+                answer.net += 1
+                answer.ups += 1
+                vote.value = True
+            else:
+                answer.net -= 1
+                answer.downs += 1
+                vote.value = False 
+            answer.put()
+            
+            vote.vtype = "answer"
+            vote.author = cur_user
+            vote.put()
+        urlquestion='/ViewQuestion?questionID=%s' % questionID
+        self.redirect(urlquestion)
 
 # interface
 application = webapp2.WSGIApplication([
@@ -202,5 +295,7 @@ application = webapp2.WSGIApplication([
     ('/AddQuestion', AddQuestion),
     ('/AddAnswer', AddAnswer),
     ('/ViewQuestion', ViewQuestion),
+    ('/VoteQ', VoteQ),
+    ('/VoteA', VoteA)
     #('/UploadImage', UploadImage),
 ], debug=True)
