@@ -5,31 +5,33 @@
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
   </head>
   <body>
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="navbar-header">
-          QnA
-      </div>
-      <div class="nav navbar-nav pull-right">
-        <a href="{{ url }}">{{url_linktext}}</a>
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href='/'>QnA</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <a class="nav navbar-nav navbar-right" href="{{ url }}">{{ url_linktext }}</a>
+        </div>
       </div>
     </div>
- 
+    
     <div class="container">
       <div><a class="btn btn-primary" href="/AddQuestion">Add Question</a></div>
       <div class="list-group">
         {% for question in questions %}
-        <a href="" class="list-group_item">
+        <a href="/ViewQuestion?questionID={{question.key.urlsafe()}}" class="list-group_item">
           <h4 class="list-group-item-heading">{{ question.name }}</h4>
-          <p class="list-group-item-text">{{ question.content.truncate(500) }}...</p>
+          <p class="list-group-item-text">{{ question.content|truncate(500) }}...</p>
         </a>
         {% endfor %}
       </div>
       {% if nextpage != '' %}
-      <div><a class="btn btn-primary" href="{{nextpage}}">Next</a></div>
+      <div><a class="btn btn-primary" href="/?cursor={{nextpage}}">Next</a></div>
       {% endif %}
     </div>
     
   </body>
 </html>
   
-{% end autoescape %}
+{% endautoescape %}

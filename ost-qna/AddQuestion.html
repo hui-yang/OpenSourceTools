@@ -16,28 +16,36 @@
       </div>
     </div>
     <div class="container">
+      {% if question %}
+      <h3>Edit Question</h3>
+      {% else %}
       <h3>Add a new Question</h3>
-      <form action="/" method="post">
+      {% endif %}
+      <form action="/AddQuestion" method="post">
         <div>
           <p>Title:</p>
-          <input type="text" name="name">
+          <input type="text" name="name" {% if question %}value="{{question.name}}" {% endif %}>
           <p>Tags:
-            <input type="checkbox" value="Arts and Design" name="tags">Arts and Design
-            <input type="checkbox" value="Books" name="tags">Books
-            <input type="checkbox" value="Finance" name="tags">Finance
-            <input type="checkbox" value="Food" name="tags">Food
-            <input type="checkbox" value="Healthcare and Medicine" name="tags">Healthcare and Medicine
-            <input type="checkbox" value="Movies" name="tags">Movies
-            <input type="checkbox" value="Music" name="tags">Music
-            <input type="checkbox" value="Philosophy" name="tags">Philosophy
-            <input type="checkbox" value="Psychology" name="tags">Psychology
-            <input type="checkbox" value="Science and Technology" name="tags">Science and Technology
-            <input type="checkbox" value="Travel" name="tags">Travel
+            <input type="checkbox" value="Arts and Design" name="tags" {% if question and "Arts and Design" in question.tags %}checked{% endif %}>Arts and Design
+            <input type="checkbox" value="Books" name="tags" {% if question and "Books" in question.tags %}checked{% endif %}>Books
+            <input type="checkbox" value="Finance" name="tags" {% if question and "Finance" in question.tags %}checked{% endif %}>Finance
+            <input type="checkbox" value="Food" name="tags" {% if question and"Food" in question.tags %}checked{% endif %}>Food
+            <input type="checkbox" value="Healthcare and Medicine" name="tags" {% if question and "Healthcare and Medicine" in question.tags %}checked{% endif %}>Healthcare and Medicine
+            <input type="checkbox" value="Movies" name="tags" {% if question and "Movies" in question.tags %}checked{% endif %}>Movies
+            <input type="checkbox" value="Music" name="tags" {% if question and "Music" in question.tags %}checked{% endif %}>Music
+            <input type="checkbox" value="Philosophy" name="tags" {% if question and "Philosophy" in question.tags %}checked{% endif %}>Philosophy
+            <input type="checkbox" value="Psychology" name="tags" {% if question and "Psychology" in question.tags %}checked{% endif %}>Psychology
+            <input type="checkbox" value="Science and Technology" name="tags" {% if question and "Science and Technology" in question.tags %}checked{% endif %}>Science and Technology
+            <input type="checkbox" value="Travel" name="tags" {% if question and "Travel" in question.tags %}checked{% endif %}>Travel
           </p>
           <p>Content:</p>
-          <textarea name="content"></textarea>
-          <p><a href="/UploadImage">Insert an image</a></p>
+          <textarea name="content">{% if question %}{{question.content}}{% endif %}</textarea>
+          {% if question %}
+          <input type="hidden" name="questionID" value="{{question.key.urlsafe()}}">
+          <input type="submit" value="Update Question">
+          {% else %}
           <input type="submit" value="Post Question">
+          {% endif %}
         </div>
       </form>
     </div>
