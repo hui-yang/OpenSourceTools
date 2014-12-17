@@ -1,0 +1,45 @@
+{% autoescape true %}
+<html lang="en">
+  <head>
+    <title>QnA</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href='/'>QnA</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <a class="nav navbar-nav navbar-right" href="{{ url }}">{{ url_linktext }}</a>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      {% if answer %}
+      <h3>Edit Answer</h3>
+      {% else %}
+      <h3>Add a new Answer</h3>
+      {% endif %}
+      <form action="/AddAnswer" method="post">
+        <div>
+          <p>Title:</p>
+          <input type="text" name="name" {% if answer %}value="{{answer.name}}" {% endif %}>
+          <p>Content:</p>
+          <textarea name="content">{% if answer %}{{answer.content}}{% endif %}</textarea>
+          <input type="hidden" name="questionID" value="{{questionID}}">
+          
+          {% if answer %}
+          <input type="hidden" name="answerID" value="{{answer.key.urlsafe()}}">
+          <input type="submit" value="Update Answer">
+          {% else %}
+          <input type="submit" value="Post Answer">
+          {% endif %}
+        </div>
+      </form>
+    </div>
+    
+  </body>
+</html>
+  
+{% endautoescape %}

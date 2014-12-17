@@ -1,0 +1,51 @@
+{% autoescape true %}
+<html lang="en">
+  <head>
+    <title>QnA</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href='/'>QnA</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <a class="nav navbar-nav navbar-right" href="{{ url }}">{{ url_linktext }}</a>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+        <div>
+          <h3>{{ question.name }}</h3>
+          <p>By {{question.author}} Created: {{question.createtime}} Modified: {{question.modtime}}</p>
+          <p>{% for tag in question.tags %} [{{ tag }}] {% endfor %}</p>
+          <p>+{{ voting.0 }} -{{ voting.1 }}</p>
+        </div>
+        <div><p>{{ question.content }}</p></div>
+        {% if user and user == question.author %}
+      	<div><a class="btn btn-primary" href="/AddQuestion?questionID={{question.key.urlsafe()}}">Edit Question</a></div>
+      	{% endif %}
+      	<div><a class="btn btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}">Add Answer</a></div>
+      	<div><p><a href="/">Back</a></p></div>
+    </div>
+    
+    <div class="container">
+    	{% for answer in answers %}
+    	<div>
+    	  <h4>{{answer.name}}</h4>
+    	  <p>By {{answer.author}} Created: {{answer.createtime}} Modified: {{answer.modtime}}</p>
+          <p>+{{ voting.0 }} -{{ voting.1 }}</p>
+          <p>{{answer.content}}</p>
+	      {% if user and user == answer.author %}
+	      <div><a class="btn btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}">Edit Answer</a></div>
+	      {% endif %}
+          
+    	</div>
+    	{% endfor %}
+    </div>
+    
+  </body>
+</html>
+  
+{% endautoescape %}
