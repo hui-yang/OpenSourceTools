@@ -334,7 +334,7 @@ class UploadImage(blobstore_handlers.BlobstoreUploadHandler):
             image.imgUrl = images.get_serving_url(blob_info.key())
             image.put()
         self.redirect(str(image.imgUrl))
-        
+"""        
 class RSS(webapp2.RequestHandler):
     def get(self):
         questionID = self.request.get('questionID')
@@ -347,7 +347,7 @@ class RSS(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'application/rss+xml'
         template = JINJA_ENVIRONMENT.get_template('RSS.xml')
         self.response.write(template.render(template_values))
-        
+"""        
         
 # interface
 application = webapp2.WSGIApplication([
@@ -358,5 +358,5 @@ application = webapp2.WSGIApplication([
     ('/VoteQ', VoteQ),
     ('/VoteA', VoteA),
     ('/UploadImage', UploadImage),
-    ('/RSS', RSS),
+#    ('/RSS', RSS),
 ], debug=True)

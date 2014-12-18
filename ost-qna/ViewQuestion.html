@@ -21,7 +21,7 @@
       	Back</a></div>
       <div class="row">
         <div>
-          <h3>{{ question.name }}&nbsp;<small><a href="/RSS?questionID={{question.key.urlsafe()}}">RSS</a></small></h3> 
+          <h3>{{ question.name }}&nbsp;</h3> 
           <em><small>By {{question.author}}, Created: {{question.createtime}}, Modified: {{question.modtime}}</small></em>
           <p>{% for tag in question.tags %} 
           	<a class="btn btn-xs btn-default active" >{{ tag }}</a> {% endfor %}
