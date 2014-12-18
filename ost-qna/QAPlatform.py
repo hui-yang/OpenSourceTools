@@ -4,13 +4,13 @@ from google.appengine.api import images
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from google.appengine.datastore.datastore_query import Cursor
-
+import re
 from google.appengine.ext import blobstore
 from google.appengine.ext.blobstore import BlobInfo
 from google.appengine.ext.webapp import blobstore_handlers
 import jinja2
+from jinja2 import Environment, FileSystemLoader
 import webapp2
-import logging
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -61,7 +61,7 @@ def img_inline(string):
     str2 = re.sub(r'<a href="(\http[s]?://[^\s<>"]+|www\.[^\s<>"]+)">[^\s]+.png</a>', r'<img src="\1">', str1)
     str3 = re.sub(r'<a href="(\http[s]?://[^\s<>"]+|www\.[^\s<>"]+)">[^\s]+.gif</a>', r'<img src="\1">', str2)
     return str3
-jinja2.filters.FILTERS['img_inline'] = img_inline
+JINJA_ENVIRONMENT.filters['img_inline'] = img_inline
 
 # request handlers
 class MainPage(webapp2.RequestHandler):
@@ -74,7 +74,11 @@ class MainPage(webapp2.RequestHandler):
             url_linktext = 'Login'
             
         cursor = Cursor(urlsafe=self.request.get('cursor'))
-        questions, next_cursor, more = Question.query().order(-Question.modtime).fetch_page(10, start_cursor=cursor)
+        if self.request.get('tag'):
+            taglabel = self.request.get('tag')
+            questions, next_cursor, more = Question.query(Question.tags==taglabel).order(-Question.modtime).fetch_page(10, start_cursor=cursor)
+        else:
+            questions, next_cursor, more = Question.query().order(-Question.modtime).fetch_page(10, start_cursor=cursor)
         """
         questiondeletes=Question.query().fetch()
         for questiondelete in questiondeletes:
@@ -147,23 +151,23 @@ class AddAnswer(webapp2.RedirectHandler): # add and edit
             self.redirect(users.create_login_url(self.request.uri))
         
         questionID = self.request.get('questionID')
+        question = ndb.Key(urlsafe = questionID).get()
 
         template_values = {
             'user': users.get_current_user(),
             'url_linktext': 'Logout',
             'url': users.create_login_url(self.request.uri),
-            'questionID': questionID,
+            'question': question,
         }
         
         if self.request.get('answerID'):
             answerID = self.request.get('answerID')
             answer = ndb.Key(urlsafe=answerID).get()
-            template_values = {
-                'answer': answer,
-            }
+            template_values['answer'] = answer
             
         template = JINJA_ENVIRONMENT.get_template('Answer.html')
         self.response.write(template.render(template_values))
+        
     def post(self):
         qid = self.request.get('questionID')
         question = ndb.Key(urlsafe = qid).get()
@@ -181,27 +185,10 @@ class AddAnswer(webapp2.RedirectHandler): # add and edit
         answer.downs = 0
         answer.net = 0
         answer.put()
-        url='/ViewQuestion?questionID=%s' % qid
+        url='/ViewQuestion?questionID=%s' % question.key.urlsafe()
         self.redirect(url)
 
 class ViewQuestion(webapp2.RequestHandler):
-    def get(self):
-        if self.request.get('questionID'):
-            user = users.get_current_user()
-            questionID = self.request.get('questionID')
-            question = ndb.Key(urlsafe = questionID).get()
-            
-            answers = Answer.query(ancestor = question.key).order(-Answer.net).fetch()
-            
-            template_values = {
-                'question': question,
-                'answers': answers,
-                'user': user,
-            }
-            template = JINJA_ENVIRONMENT.get_template('ViewQuestion.html')
-            self.response.write(template.render(template_values))
-            
-class VoteQ(webapp2.RequestHandler):
     def get(self):
         if users.get_current_user():
             url = users.create_logout_url(self.request.uri)
@@ -209,6 +196,28 @@ class VoteQ(webapp2.RequestHandler):
         else:
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
+        user = users.get_current_user()
+        questionID = self.request.get('questionID')
+        question = ndb.Key(urlsafe = questionID).get()
+        
+        answers = Answer.query(ancestor = question.key).order(-Answer.net).fetch()
+        
+        template_values = {
+            'question': question,
+            'answers': answers,
+            'user': user,
+            'url': url,
+            'url_linktext': url_linktext,
+        }
+        template = JINJA_ENVIRONMENT.get_template('ViewQuestion.html')
+        self.response.write(template.render(template_values))
+            
+class VoteQ(webapp2.RequestHandler):
+    def get(self):
+        if users.get_current_user():
+            user = users.get_current_user()
+        else:
+            self.redirect(users.create_login_url(self.request.uri))
             
         questionID = self.request.get("questionID")
         question = ndb.Key(urlsafe = questionID).get()
@@ -250,11 +259,9 @@ class VoteQ(webapp2.RequestHandler):
 class VoteA(webapp2.RequestHandler):
     def get(self):
         if users.get_current_user():
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
+            user = users.get_current_user()
         else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
+            self.redirect(users.create_login_url(self.request.uri))
             
         questionID = self.request.get("questionID")
         question = ndb.Key(urlsafe = questionID).get()
@@ -326,7 +333,21 @@ class UploadImage(blobstore_handlers.BlobstoreUploadHandler):
             image.author = users.get_current_user()
             image.imgUrl = images.get_serving_url(blob_info.key())
             image.put()
-        self.redirect('/')
+        self.redirect(str(image.imgUrl))
+        
+class RSS(webapp2.RequestHandler):
+    def get(self):
+        questionID = self.request.get('questionID')
+        question = ndb.Key(urlsafe = questionID).get()
+        answers = Answer.query(ancestor = question.key).fetch()
+        template_values = {
+            'question': question,
+            'answers': answers
+        }
+        self.response.headers['Content-Type'] = 'application/rss+xml'
+        template = JINJA_ENVIRONMENT.get_template('RSS.xml')
+        self.response.write(template.render(template_values))
+        
         
 # interface
 application = webapp2.WSGIApplication([
@@ -337,4 +358,5 @@ application = webapp2.WSGIApplication([
     ('/VoteQ', VoteQ),
     ('/VoteA', VoteA),
     ('/UploadImage', UploadImage),
+    ('/RSS', RSS),
 ], debug=True)

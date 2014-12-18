@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+{% autoescape true %}
+<question>
+  <title>{{question.name}}</title>
+  <link>http://ost-qna.appspot.com/ViewQuestion?questionID={{question.key}}</link>
+  <author>{{question.author}}</author>
+  <create>{{question.createtime}}</create>
+  <modify>{{question.modtime}}</modify>
+  <description>{{question.content}}</description>
+  {% for answer in answers %}
+  <item>
+    <title>{{answer.name}}</title>
+	  <link>http://ost-qna.appspot.com/ViewQuestion?questionID={{question.key}}</link>
+	  <author>{{answer.author}}</author>
+	  <create>{{answer.createtime}}</create>
+	  <modify>{{answer.modtime}}</modify>
+	  <description>{{answer.content}}</description>
+  </item>
+	{% endfor%}
+</question>
+
+</rss>
+{% endautoescape %}

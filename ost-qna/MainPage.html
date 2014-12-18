@@ -11,26 +11,46 @@
           <a class="navbar-brand" href='/'>QnA</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
-          <a class="nav navbar-nav navbar-right" href="{{ url }}">{{ url_linktext }}</a>
+          <a class="btn btn-primary pull-right" href="{{ url }}">{{ url_linktext }}</a>
         </div>
       </div>
     </div>
     
     <div class="container">
       <div>
+      	<a href="/?tag=Arts" class="btn btn-xs btn-default" role="button">Arts</a>
+      	<a href="/?tag=Books" class="btn btn-xs btn-default" role="button">Books</a>
+      	<a href="/?tag=Finance" class="btn btn-xs btn-default" role="button">Finance</a>
+      	<a href="/?tag=Food" class="btn btn-xs btn-default" role="button">Food</a>
+      	<a href="/?tag=Healthcare" class="btn btn-xs btn-default" role="button">Healthcare</a>
+      	<a href="/?tag=Movies" class="btn btn-xs btn-default" role="button">Movies</a>
+      	<a href="/?tag=Music" class="btn btn-xs btn-default" role="button">Music</a>
+      	<a href="/?tag=Philosophy" class="btn btn-xs btn-default" role="button">Philosophy</a>
+      	<a href="/?tag=Psychology" class="btn btn-xs btn-default" role="button">Psychology</a>
+      	<a href="/?tag=Science" class="btn btn-xs btn-default" role="button">Science</a>
+      	<a href="/?tag=Travel" class="btn btn-xs btn-default" role="button">Travel</a>
+      </div>
+      <br>
+      <div>
       	<a class="btn btn-primary" href="/AddQuestion">Add Question</a>
       	<a class="btn btn-primary" href="/UploadImage">Upload Image</a>
       </div>
+      <br>
       <div class="list-group">
         {% for question in questions %}
+        <blockquote>
+        <div class="row">
         <a href="/ViewQuestion?questionID={{question.key.urlsafe()}}" class="list-group_item">
           <h4 class="list-group-item-heading">{{ question.name }}</h4>
-          <p class="list-group-item-text">{{ question.content|truncate(500) }}...</p>
+          <em><small>By {{question.author}}, Created: {{question.createtime}}, Modified: {{question.modtime}}</small></em>
+          <p class="list-group-item-text bg-info">{{ question.content|truncate(500) }}...</p>
         </a>
+        </div>
+        </blockquote>
         {% endfor %}
       </div>
       {% if nextpage != '' %}
-      <div><a class="btn btn-primary" href="/?cursor={{nextpage}}">Next</a></div>
+      <div><a class="btn btn-primary" href="/?cursor={{nextpage}}"><span class="glyphicon glyphicon-chevron-right"></span>Next</a></div>
       {% endif %}
     </div>
     

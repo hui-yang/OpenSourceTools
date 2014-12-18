@@ -15,3 +15,9 @@ indexes:
   properties:
   - name: net
     direction: desc
+
+- kind: Question
+  properties:
+  - name: tags
+  - name: modtime
+    direction: desc

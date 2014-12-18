@@ -11,46 +11,55 @@
           <a class="navbar-brand" href='/'>QnA</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
-          <a class="nav navbar-nav navbar-right" href="{{ url }}">{{ url_linktext }}</a>
+          <a class="btn btn-primary pull-right" href="{{ url }}">{{ url_linktext }}</a>
         </div>
       </div>
     </div>
     <div class="container">
+      <div><a href="/" class="btn btn-sm btn-primary">
+      	<span class="glyphicon glyphicon-chevron-left"></span>
+      	Back</a></div>
+      <div class="row">
         <div>
-          <h3>{{ question.name }}</h3>
-          <p>By {{question.author}} Created: {{question.createtime}} Modified: {{question.modtime}}</p>
-          <p>{% for tag in question.tags %} [{{ tag }}] {% endfor %}</p>
+          <h3>{{ question.name }}&nbsp;<small><a href="/RSS?questionID={{question.key.urlsafe()}}">RSS</a></small></h3> 
+          <em><small>By {{question.author}}, Created: {{question.createtime}}, Modified: {{question.modtime}}</small></em>
+          <p>{% for tag in question.tags %} 
+          	<a class="btn btn-xs btn-default active" >{{ tag }}</a> {% endfor %}
+          </p>
+          <p class="bg-info">{{ question.content | img_inline | safe }}</p>
           <p>
-          	<a class="btn btn-default" href="/VoteQ?questionID={{question.key.urlsafe()}}&value=true">Up({{ question.ups }})</a>
-          	<a class="btn btn-default" href="/VoteQ?questionID={{question.key.urlsafe()}}&value=false">Down({{ question.downs }})</a>
+          	<a class="btn btn-xs btn-default" href="/VoteQ?questionID={{question.key.urlsafe()}}&value=true">Up({{ question.ups }})</a>
+          	<a class="btn btn-xs btn-default" href="/VoteQ?questionID={{question.key.urlsafe()}}&value=false">Down({{ question.downs }})</a>
           </p>
         </div>
-        <div><p>{{ question.content | img_inline }}</p></div>
         
-        {% if user and user == question.author %}
-      	<div><a class="btn btn-primary" href="/AddQuestion?questionID={{question.key.urlsafe()}}">Edit Question</a></div>
+        
+      	<div>{% if user and user == question.author %}<a class="btn btn-sm btn-primary" href="/AddQuestion?questionID={{question.key.urlsafe()}}">Edit Question</a>
       	{% endif %}
       	
-      	<div><a class="btn btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}">Add Answer</a></div>
-      	<div><p><a href="/">Back</a></p></div>
+      	<a class="btn btn-sm btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}">Add Answer</a></div>
+      	<br>
+      </div>
     </div>
     
     <div class="container">
     	{% for answer in answers %}
-    	<div>
+    	<blockquote>
+    	<div class="row">
     	  <h4>{{answer.name}}</h4>
-    	  <p>By {{answer.author}} Created: {{answer.createtime}} Modified: {{answer.modtime}}</p>
+    	  <em><small>By {{answer.author}}, Created: {{answer.createtime}}, Modified: {{answer.modtime}}</small></em>
+    	  <p class="bg-info">{{answer.content | img_inline | safe }}</p>
           <p>
-          	<a class="btn btn-default" href="/VoteA?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}&value=true">Up({{ answer.ups }})</a>
-          	<a class="btn btn-default" href="/VoteA?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}&value=false">Down({{ answer.downs }})</a>
+          	<a class="btn btn-xs btn-default" href="/VoteA?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}&value=true">Up({{ answer.ups }})</a>
+          	<a class="btn btn-xs btn-default" href="/VoteA?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}&value=false">Down({{ answer.downs }})</a>
           </p>
-          <p>{{answer.content | img_inline }}</p>
           
 	      {% if user and user == answer.author %}
-	      <div><a class="btn btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}">Edit Answer</a></div>
+	      <div><a class="btn btn-sm btn-primary" href="/AddAnswer?questionID={{question.key.urlsafe()}}&answerID={{answer.key.urlsafe()}}">Edit Answer</a></div>
 	      {% endif %}
           
     	</div>
+    	</blockquote>
     	{% endfor %}
     </div>
     

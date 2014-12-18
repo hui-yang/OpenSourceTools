@@ -11,7 +11,7 @@
           <a class="navbar-brand" href='/'>QnA</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
-          <a class="nav navbar-nav navbar-right" href="{{ url }}">{{ url_linktext }}</a>
+          <a class="btn btn-primary pull-right" href="{{ url }}">{{ url_linktext }}</a>
         </div>
       </div>
     </div>
@@ -22,18 +22,20 @@
       <h3>Add a new Answer</h3>
       {% endif %}
       <form action="/AddAnswer" method="post">
-        <div>
-          <p>Title:</p>
-          <input type="text" name="name" {% if answer %}value="{{answer.name}}" {% endif %}>
-          <p>Content:</p>
-          <textarea name="content">{% if answer %}{{answer.content}}{% endif %}</textarea>
-          <input type="hidden" name="questionID" value="{{questionID}}">
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Title</label>
+          <div class="col-sm-10"><input type="text" name="name" class="form-control" {% if answer %}value="{{answer.name}}" {% endif %}></div>
+          
+          <label class="col-sm-2 control-label">Content</label>
+          <div class="col-sm-10"><textarea name="content" class="form-control" rows="5">{% if answer %}{{answer.content}}{% endif %}</textarea></div>
+          
+          <input type="hidden" name="questionID" value="{{question.key.urlsafe()}}">
           
           {% if answer %}
           <input type="hidden" name="answerID" value="{{answer.key.urlsafe()}}">
-          <input type="submit" value="Update Answer">
+          <input class="btn btn-sm btn-primary" type="submit" value="Update Answer">
           {% else %}
-          <input type="submit" value="Post Answer">
+          <input class="btn btn-sm btn-primary" type="submit" value="Post Answer">
           {% endif %}
         </div>
       </form>
